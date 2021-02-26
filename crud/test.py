@@ -35,7 +35,7 @@ def update(con,cursor):
     sql = "update studenti set nume='"+sn+"', prenume='"+sp+"',an='"+sa+"', grupa='"+sg+"', bursa='" +sb+"' where ID="+sid
     #Execute Update query on opened cursor
     cursor.execute(sql)
-    #commit Changes to DB
+    #commit Changes to DB   
     con.commit()
     #display success message
     print(cursor.rowcount, "Record updated.")

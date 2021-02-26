@@ -6,10 +6,9 @@ con = config.connect()
 #open cursor
 db_cursor = con.cursor(dictionary=True)
 # executing cursor with execute method and pass SQL query
-db_cursor.execute("CREATE DATABASE IF NOT EXISTS universitate2")
+db_cursor.execute("CREATE DATABASE IF NOT EXISTS magazin2")
 # get list of all databases
 db_cursor.execute("SHOW DATABASES")
 #print all databases
 for db in db_cursor:
 	print(db)
-db_cursor.execute("DROP DATABASE IF EXISTS universitate2")
