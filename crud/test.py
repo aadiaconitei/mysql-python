@@ -15,12 +15,17 @@ def insert(con,cursor):
     sql = "INSERT INTO studenti (nume,prenume,an, grupa, bursa,data_nastere,sex) VALUES (%s, %s,%s, %s,%s, %s,%s)"
     #create list of values typed from user to insert in customer table
     val = (sn,sp,sa,sg,sb,sd,ssex)
-    #Execute query with values
-    cursor.execute(sql, val)
-    #commit for permanent storage in database
-    con.commit()
-    #display success message
-    print(cursor.rowcount, "Record inserted.")
+    try:
+        #Execute query with values
+        cursor.execute(sql, val)
+        #commit for permanent storage in database
+        con.commit()
+        #display success message
+        print(cursor.rowcount, "Record inserted.")
+    except:
+        # rollback used for if any error   
+        mysqldb.rollback()
+        print('Error: Inset')
     
     
 def update(con,cursor):
