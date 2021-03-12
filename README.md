@@ -1,0 +1,2 @@
+- https://tecadmin.net/change-mysql-password-policy-level/
+- https://tecadmin.net/remove-mysql-validate-password-plugin/
