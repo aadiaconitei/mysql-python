@@ -1,0 +1,3 @@
+- https://tecadmin.net/change-mysql-password-policy-level/
+- https://tecadmin.net/remove-mysql-validate-password-plugin/
+- https://lefred.be/content/mysql-8-0-and-user-password-management/
