@@ -1,0 +1,56 @@
+
+Un magazin vrea să stocheze informații despre următoarele entități:
+- sa se afiseze cine a adaugat produsele
+- sa se afiseze cine a modificat produsele: tabela separata un produs poate fi modificat de mai multe ori de mai multi admini
+
+- Clienți:  informații personale
+- Produse:  denumire, descriere.
+- Produsele sunt împărțite pe categorii, dar un produs poate să facă
+parte din mai multe categorii.
+- Produsele se găsesc în mai multe culori.
+- Magazinul colaborează cu mai mulți distribuitori, pentru produse.
+- Pentru fiecare vânzare se stochează informațiile facturii.
+1.
+DB noua
+User nou 
+Asociere user cu noua Baza de date: user cu privilegii doar pe aceasta baza de date;
+
+2. Configurare conexiune cu userul nou
+
+3. Definirea tabelelor necesare cu informatiile minime, PK, INDEX, unique, etc.
+- Administratori (idAdmin, nume, prenume, email, parola)
+- Clienti (idClient, nume, prenume, cnp, idAdresa)
+- Adrese (idAdresa, localitate, strada, codPostal, numar, ap, judet)
+- Produse (idProdus, numeProdus, descriere, idAdmin, dataAdaugare, status)
+- ProduseLog (id, idProdus,idAdmin, dataModificare)
+    - FK (idProdus, idAdmin) -> Produse
+- Culori (idCuloare, numeCuloare)
+- ProduseCulori (idCuloare, idProdus, cantitate)
+- Categorii (idCategorie, denumire, descriere)
+- ProduseCategorii (idCategorie, idProdus)
+- Distribuitori (idDistribuitor, nume, idAdresa)
+- ProduseDistribuitori (idProdus, idDistribuitor, pretCumparare)
+- Factura (idFactura, nrTranzactie, idClient, data)
+- ItemFactura (idItem, idFactura, idProdus, cantitate, idCuloare, pretVanzare)
+    - FK (idProdus, idCuloare) -> ProduseCulori
+
+4. Import/Insert date pentru fiecare tabel
+
+5. Cerinte:
+1. Modificați adresa (a.î. să fie idAdresa = 2) clientului cu idClient = 1
+2. Afișați toate produsele și culorile lor. 
+3. Afișați toate informațiile despre clienți și ce au cumpărat aceștia.
+4. Afișați produsele din categoria A sau B 
+5. Afișați produsele care fac parte atât din categoria A, cât și din categoria B
+6. Afișați produsele care se află în categoria A, dar nu se află în B
+7. Afișați clienții care au cumpărat produse din categoria A
+8. Afișați numărul de produse din fiecare categorie
+9. Afișați distribuitorii de la care nu s-a comandat nici un produs
+10. Afișați suma totală a fiecărei facturi
+11. Afișați categoriile cu cel puțin 10 produse, ordonate descrescător după
+numărul de produse
+
+Bonus: View, Proceduri, Functii, Trigger
+
+
+Rezolvare
