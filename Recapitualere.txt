@@ -25,7 +25,7 @@ Asociere user cu noua Baza de date: user cu privilegii doar pe aceasta baza de d
 - ProduseLog (id, idProdus,idAdmin, dataModificare)
     - FK (idProdus, idAdmin) -> Produse
 - Culori (idCuloare, numeCuloare)
-- ProduseCulori (idCuloare, idProdus, cantitate)
+- ProduseCulori (id, idCuloare, idProdus, cantitate)
 - Categorii (idCategorie, denumire, descriere)
 - ProduseCategorii (idCategorie, idProdus)
 - Distribuitori (idDistribuitor, nume, idAdresa)
@@ -54,3 +54,330 @@ Bonus: View, Proceduri, Functii, Trigger
 
 
 Rezolvare
+1.
+CREATE SCHEMA `recapitulare` DEFAULT CHARACTER SET utf8 ;
+
+CREATE USER 'recap'@'localhost' IDENTIFIED BY 'Recapitulare1!';
+
+GRANT ALL PRIVILEGES ON recapitulare.* TO 'recap'@'localhost';
+
+FLUSH PRIVILEGES;
+
+2.
+mysql -u recap -p recapitulare
+
+show databases;
+
+3.
+CREATE TABLE `recapitulare`.`admin` (
+  `idadmin` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nume` VARCHAR(45) NOT NULL,
+  `prenume` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(145) NOT NULL,
+  `parola` CHAR(64) NOT NULL,
+  PRIMARY KEY (`idadmin`),
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8;
+INSERT INTO `recapitulare`.`admin` (`idadmin`, `nume`, `prenume`, `email`, `parola`) VALUES (1, 'Popa', 'Ion', 'popa.ion@test.ro', sha1('test'));
+INSERT INTO `recapitulare`.`admin` (`idadmin`, `nume`, `prenume`, `email`, `parola`) VALUES (2, 'Dobre', 'Dan', 'dobre.dan@tet.ro', sha1('demo'));
+
+
+CREATE TABLE `recapitulare`.`clienti` (
+  `idclient` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nume` VARCHAR(45) NOT NULL,
+  `prenume` VARCHAR(45) NOT NULL,
+  `cnp` CHAR(13) NOT NULL,
+  `idadresa` INT NULL,
+  PRIMARY KEY (`idclient`),
+  UNIQUE INDEX `cnp_UNIQUE` (`cnp` ASC) )
+ENGINE = InnoDB;
+
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('1', 'Popescu', 'Cornel', '1880809155178', '1');
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('2', 'Vasilescu', 'Razvan', '1890812892323', '2');
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('3', 'Dornescu', 'Mihnea', '1900709892786', '3');
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('4', 'Georgescu', 'Titi', '1890812892341', '4');
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('5', 'Popescu', 'Liviu', '1900812892345', '1');
+INSERT INTO `recapitulare`.`clienti` (`idclient`, `nume`, `prenume`, `cnp`, `idadresa`) VALUES ('6', 'Georgescu', 'Titi', '1892812892341', '2');
+
+CREATE TABLE `recapitulare`.`adresa` (
+  `idadresa` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `localitate` VARCHAR(45) NULL,
+  `strada` VARCHAR(45) NULL,
+  `codpostal` VARCHAR(45) NULL,
+  `numar` VARCHAR(5) NULL,
+  `ap` VARCHAR(45) NULL,
+  `judet` VARCHAR(45) NULL,
+  PRIMARY KEY (`idadresa`))
+  ENGINE = InnoDB;
+
+INSERT INTO `recapitulare`.`adresa` (`idadresa`, `localitate`, `codpostal`, `judet`) VALUES ('1', 'Balesti', '517117', 'Alba');
+INSERT INTO `recapitulare`.`adresa` (`idadresa`, `localitate`, `strada`, `codpostal`, `numar`, `ap`, `judet`) VALUES ('2', 'Bacau', 'Bacovia', '600237', '51A', '24', 'Bacau');
+INSERT INTO `recapitulare`.`adresa` (`idadresa`, `localitate`, `codpostal`, `judet`) VALUES ('3', 'Bologa', '407471', 'Cluj');
+INSERT INTO `recapitulare`.`adresa` (`idadresa`, `localitate`, `strada`, `codpostal`, `numar`, `ap`, `judet`) VALUES ('4', 'Bucuresti', 'Marinescu', '050796', '2T', '13', 'Bucuresti');
+
+
+ALTER TABLE `recapitulare`.`adresa` 
+ADD CONSTRAINT `idadresa_key`
+  FOREIGN KEY (`idadresa`)
+  REFERENCES `recapitulare`.`clienti` (`idclient`)
+  ON DELETE CASCADE
+  ON UPDATE NO ACTION;
+
+DROP TRIGGER IF EXISTS `recapitulare`.`adresa_AFTER_DELETE`;
+
+DELIMITER $$
+USE `recapitulare`$$
+CREATE DEFINER = CURRENT_USER TRIGGER `recapitulare`.`adresa_AFTER_DELETE` AFTER DELETE ON `adresa` FOR EACH ROW
+BEGIN
+UPDATE clienti SET idadresa = NULL WHERE idadresa = OLD.idadresa;
+END$$
+DELIMITER ;
+
+CREATE TABLE `recapitulare`.`produse` (
+  `idprodus` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nume` VARCHAR(245) NULL,
+  `descriere` MEDIUMTEXT NULL,
+  `idadmin` INT NULL,
+  `data_adaugare` DATETIME NULL,
+  `status` TINYINT(1) NOT NULL DEFAULT 1,
+  PRIMARY KEY (`idprodus`))
+ENGINE = InnoDB;
+
+INSERT INTO `produse` (`idprodus`, `nume`, `descriere`, `idadmin`, `data_adaugare`, `status`) VALUES (NULL, 'Geacă de primăvară-toamnă \'Bikerprincess\'', 'Geacă de primăvară-toamnă \'Bikerprincess\' FREAKY NATION pe negru\r\nDesign & funcționalitate\r\nCroială pe talie\r\nFermoar înclinat\r\nMonocrom\r\nPiele\r\nGeacă de motociclist\r\nUşor căptuşit\r\nMaterial moale\r\nNr. articol FKN0077001001000\r\n\r\nMărime și croială\r\nForma potrivită: Formă îngustă\r\nLungime totală: 59cm\r\nLungimea mânecii: 62cm\r\n\r\nMaterial & îngrijire\r\nMaterial suprafață: 100% Piele\r\nElasticitatea: Neelastic\r\nConține piese netextile de origine animală: da', '1', '2021-04-06 04:12:10', '1'), (NULL, 'Geacă de primăvară-toamnă \'New Love\'', 'Geacă de primăvară-toamnă \'New Love\' FREAKY NATION pe roșu\r\nDesign & funcționalitate\r\nMonocrom\r\nBuzunar fermoar\r\nFermoar\r\nGuler rever\r\nPiele\r\nGeacă de motociclist\r\nUşor căptuşit\r\nMaterial neted\r\nUsed-Look\r\nNr. articol FKN0132001000001\r\n\r\nMărime și croială\r\nForma potrivită: Formă ce accentuează figura\r\nLungime totală: 59cm\r\nLungimea mânecii: 61cm\r\n\r\nMaterial & îngrijire\r\nMaterial suprafață: 100% Piele\r\nCăptușeală: 100% Bumbac\r\nCăptușeală mâneci: 100% Poliester\r\nElasticitatea: Neelastic\r\nConține piese netextile de origine animală: da', '2', '2021-04-04 14:28:35', '1');
+INSERT INTO `produse` (`idprodus`, `nume`, `descriere`, `idadmin`, `data_adaugare`, `status`) VALUES (NULL, 'Sneaker de alergat \'CLIMACOOL VENTO\'', 'Sneaker de alergat \'CLIMACOOL VENTO\' ADIDAS PERFORMANCE pe negru / alb\r\nDesign & funcționalitate\r\nBombeu rotund\r\n9-12 mm diferență de înălțime\r\nProfil\r\nOchiuri de plasă\r\nÎnchidere cu șireturi\r\nPrint Logo\r\nMix de materiale\r\nȘiret 5 găuri\r\nDungi laterale\r\nInserții culori în contrast\r\nPlasă air\r\nCălcâi întărit\r\nZona degetelor de picioare întărită\r\nConstrucție fără cusături\r\nLabel Print\r\nInserții de plasă/ochiuri\r\nAmortizare\r\nTalpă flexibilă\r\nSuprafață structurată\r\nNr. articol ADI2906005000004\r\n\r\nMărime și croială\r\nGreutate: 300-400 g\r\n\r\nMaterial & îngrijire\r\nMaterial suprafață: Sintetic, Textil\r\nCăptușeală și branț: Textil\r\nTalpă: Cauciuc\r\n\r\nFuncționalitate\r\nTipul de sport: Atletism\r\nFuncţii: Amortizare\r\nDomeniul de utilizare: Stradă/antrenament\r\nAmortizarea: Boost', '1', '2021-04-05 20:17:50', '1');
+INSERT INTO `produse` (`idprodus`, `nume`, `descriere`, `idadmin`, `data_adaugare`, `status`) VALUES (NULL, 'Pantofi \'Woodland\'\r\n', 'Pantofi \'Woodland\' JACK WOLFSKIN pe gri\r\nDesign & funcționalitate\r\nÎnchidere cu șireturi\r\nMonocrom\r\nBombeu rotund\r\nOchiuri de plasă\r\nImitație de piele\r\nProfil\r\nFață de încălțăminte căptușită\r\nProducătorul este membru al Fair Wear Foundation (Leader Brand)\r\nNr. articol JKW0613001000001\r\n\r\nMărime și croială\r\nÎnălțimea tocului: Toc plat (0-3 cm)\r\n\r\nMaterial & îngrijire\r\nMaterial suprafață: Textil, Sintetic\r\nCăptușeală și branț: Textil\r\nTalpă: Material plastic\r\n\r\nFuncționalitate\r\nStil sneaker: Running\r\nTipul de sport: Drumeţii\r\nDomeniul de utilizare: Drumeție', '2', '2021-04-06 04:12:10', '1'), (NULL, 'Botine \'Wynn\'', 'Botine \'Wynn\' ICEPEAK pe negru\r\nDesign & funcționalitate\r\nMonocrom\r\nMix de materiale\r\nÎnălțimea gleznei\r\nPiele\r\nProfil\r\nUşor căptuşit\r\nPiele velur\r\nÎnchidere cu șireturi\r\nMaterial robust\r\nLabel Patch/Label Flag\r\nCusături ton în ton\r\nTalpă profilată\r\nProtecție degete la picioare\r\nOchiuri de alpinism\r\nProtecție de cauciuc călcâi\r\nFață de încălțăminte căptușită\r\nNr. articol ICP0181002000001\r\n\r\nMaterial & îngrijire\r\nMaterial suprafață: Piele, Sintetic\r\nMaterial interior: Textil\r\nTalpă: Cauciuc\r\nConține piese netextile de origine animală: da\r\n\r\nFuncționalitate\r\nTipul de sport: Drumeţii\r\nFuncţii: Rezistent la utilizare intensă, Rezistent la apă, Respirație activă\r\nDomeniul de utilizare: Teren\r\nDomeniul de utilizare: Drumeție', '2', '2021-04-04 14:28:35', '1');
+
+
+CREATE TABLE `recapitulare`.`produselog` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idprodus` INT NULL,
+  `idadmin` INT NULL,
+  `datamodificare` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+ALTER TABLE `recapitulare`.`produselog` 
+CHANGE COLUMN `idprodus` `idprodus` INT(11) UNSIGNED NULL DEFAULT NULL ,
+CHANGE COLUMN `idadmin` `idadmin` INT(11) UNSIGNED NULL DEFAULT NULL ,
+ADD INDEX `key_idprodus_idx` (`idprodus` ASC) ,
+ADD INDEX `key_idadmin_idx` (`idadmin` ASC) ;
+;
+ALTER TABLE `recapitulare`.`produselog` 
+ADD CONSTRAINT `key_idprodus`
+  FOREIGN KEY (`idprodus`)
+  REFERENCES `recapitulare`.`produse` (`idprodus`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `key_idadmin`
+  FOREIGN KEY (`idadmin`)
+  REFERENCES `recapitulare`.`admin` (`idadmin`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+  CREATE TABLE `recapitulare`.`culori` (
+  `idculoare` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nume` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idculoare`),
+  UNIQUE INDEX `nume_UNIQUE` (`nume` ASC) )
+ENGINE = InnoDB;
+INSERT INTO `culori` (`idculoare`, `nume`) VALUES (NULL, 'alb'), (NULL, 'rosu');
+INSERT INTO `culori` (`idculoare`, `nume`) VALUES (NULL, 'negru'), (NULL, 'verde');
+
+
+CREATE TABLE `recapitulare`.`categorii` (
+  `idcategorie` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `denumire` VARCHAR(45) NOT NULL,
+  `descriere` VARCHAR(245) NULL,
+  PRIMARY KEY (`idcategorie`))
+ENGINE = InnoDB;
+ALTER TABLE `recapitulare`.`categorii` 
+ADD UNIQUE INDEX `denumire_UNIQUE` (`denumire` ASC) ;
+INSERT INTO `categorii` (`idcategorie`, `denumire`, `descriere`) VALUES (NULL, 'Sport', NULL), (NULL, 'Pantofi', NULL);
+INSERT INTO `categorii` (`idcategorie`, `denumire`, `descriere`) VALUES (NULL, 'Haine', NULL), (NULL, 'Noutati', NULL);
+
+CREATE TABLE `recapitulare`.`produseculori` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idculoare` INT NOT NULL,
+  `idprodus` INT NOT NULL,
+  `cantitate` INT NOT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+ALTER TABLE `recapitulare`.`produseculori` 
+ADD INDEX `prod` (`idprodus` ASC) ,
+ADD INDEX `culoare` (`idculoare` ASC) ;
+INSERT INTO `produseculori` (`id`, `idculoare`, `idprodus`, `cantitate`) VALUES (NULL, '1', '1', '15'), (NULL, '1', '2', '25');
+INSERT INTO `produseculori` (`id`, `idculoare`, `idprodus`, `cantitate`) VALUES (NULL, '1', '2', '35'), (NULL, '1', '1', '45');
+INSERT INTO `produseculori` (`id`, `idculoare`, `idprodus`, `cantitate`) VALUES (NULL, '3', '3', '50'), (NULL, '3', '4', '60');
+INSERT INTO `produseculori` (`id`, `idculoare`, `idprodus`, `cantitate`) VALUES (NULL, '2', '3', '50'), (NULL, '2', '4', '60');
+INSERT INTO `produseculori` (`id`, `idculoare`, `idprodus`, `cantitate`) VALUES (NULL, '4', '5', '50'), (NULL, '2', '5', '60');
+CREATE TABLE `recapitulare`.`distribuitori` (
+  `iddistribuitor` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nume` VARCHAR(45) NOT NULL,
+  `idadresa` INT UNSIGNED NULL,
+  PRIMARY KEY (`iddistribuitor`),
+  INDEX `key_adresa_idx` (`idadresa` ASC) ,
+  CONSTRAINT `key_adresa`
+    FOREIGN KEY (`idadresa`)
+    REFERENCES `recapitulare`.`adresa` (`idadresa`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE `recapitulare`.`produsedistribuitori` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idprodus` INT UNSIGNED NULL,
+  `iddistribuitor` INT UNSIGNED NULL,
+  `pretcumparare` DECIMAL(10,2) UNSIGNED NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  INDEX `key_produs_idx` (`idprodus` ASC) ,
+  INDEX `key_dist_idx` (`iddistribuitor` ASC) ,
+  CONSTRAINT `key_produs`
+    FOREIGN KEY (`idprodus`)
+    REFERENCES `recapitulare`.`produse` (`idprodus`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `key_dist`
+    FOREIGN KEY (`iddistribuitor`)
+    REFERENCES `recapitulare`.`distribuitori` (`iddistribuitor`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+CREATE TABLE `recapitulare`.`factura` (
+  `idfactura` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `nrtranzactie` VARCHAR(45) NOT NULL,
+  `idclient` INT UNSIGNED NULL,
+  `data` DATETIME NULL,
+  PRIMARY KEY (`idfactura`))
+ENGINE = InnoDB;
+CREATE TABLE `recapitulare`.`itemfactura` (
+  `iditem` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idfactura` INT UNSIGNED NULL,
+  `idprodus` INT UNSIGNED NULL,
+  `cantitate` INT NULL,
+  `idculoare` INT UNSIGNED NULL,
+  `pretvanzare` DECIMAL(10,2) NULL,
+  PRIMARY KEY (`iditem`))
+ENGINE = InnoDB;
+
+
+ALTER TABLE `recapitulare`.`itemfactura` 
+ADD INDEX `key_fact_idx` (`idfactura` ASC) ;
+;
+ALTER TABLE `recapitulare`.`itemfactura` 
+ADD CONSTRAINT `key_fact`
+  FOREIGN KEY (`idfactura`)
+  REFERENCES `recapitulare`.`factura` (`idfactura`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+ALTER TABLE `recapitulare`.`itemfactura` 
+ADD CONSTRAINT `key_prod`
+  FOREIGN KEY (`idprodus`)
+  REFERENCES `recapitulare`.`produseculori` (`idprodus`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION,
+ADD CONSTRAINT `key_culoare`
+  FOREIGN KEY (`idculoare`)
+  REFERENCES `recapitulare`.`produseculori` (`idculoare`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+CREATE TABLE `recapitulare`.`produsecategorii` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `idcategorie` INT NULL,
+  `idprodus` INT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `idcat` (`idcategorie` ASC) ,
+  INDEX `idprod` (`idprodus` ASC) )
+ENGINE = InnoDB;
+
+5.1
+UPDATE clienti SET idadresa = 2 WHERE idclient = 1;
+5.2
+SELECT p.nume, c.nume FROM produse p INNER JOIN produseculori pc 
+ON p.idprodus = pc.idprodus INNER JOIN culori c ON c.idculoare = pc.idculoare;
+5.3
+SELECT * FROM clienti c INNER JOIN factura f ON c.idclient = f.idclient INNER JOIN itemfactura i ON i.idfactura = f.idfactura
+INNER JOIN produseculori pc ON pc.idprodus = i.idprodus AND pc.idculoare = i.idculoare;
+5.4
+SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'sport' OR c.denumire = 'noutati';
+
+5.5
+(SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'sport')
+INTERSECT
+(SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'noutati');
+
+sau 
+
+SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'sport' AND p.idprodus IN 
+(SELECT p.idprodus
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'noutati');
+
+5.6
+(SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'sport')
+EXCEPT
+(SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'noutati');
+
+sau 
+SELECT p.nume, c.denumire
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'sport' AND p.idprodus  NOT IN 
+(SELECT p.idprodus
+FROM produse p INNER JOIN produsecategorii pc ON p.idprodus =pc.idprodus
+INNER JOIN categorii c ON c.idcategorie = pc.idcategorie
+WHERe c.denumire = 'noutati');
+
+5.7
+SELECT c.nume,c.prenume
+FROM clienti c INNER JOIN factura f ON c.idclient = f.idclient
+INNER JOIN itemfactura i ON i.idfactura = f.idfactura
+INNER JOIN produse p ON p.idprodus =i.idprodus
+INNER JOIN produsecategorii pc ON p.idprodus = pc.idprodus
+INNER JOIN categorii cat ON cat.idcategorie = pc.idcategorie
+WHERE cat.denumire ='sport' GROUP BY c.idclient;
+
+5.8
+SELECT c.idcategorie, c.denumire, count(*) AS nr_produse
+FROM produsecategorii pc INNER JOIN categorii c ON
+c.idcategorie = pc.idcategorie
+GROUP BY c.idcategorie, c.denumire;
+
+5.9
+SELECT d.nume
+FROM distribuitori d LEFT JOIN produsedistribuitori pd ON
+d.iddistribuitor = pd.iddistribuitor
+WHERE pd.idprodus IS NULL;
+
+5.10
+SELECT f.idfactura, f.nrtranzactie, sum(i.pretvanzare * i.cantitate) AS
+sumafactura
+FROM itemfactura i INNER JOIN factura f on f.idfactura = i.idfactura
+GROUP BY f.idfactura, f.nrtranzactie;
+
+5.11
+SELECT c.idcategorie, c.denumire, count(idprodus) as nr_produse
+FROM categorii c INNER JOIN produsecategorii pc ON c.idcategorie = pc.idcategorie
+GROUP BY c.idcategorie, c.denumire
+HAVING nr_produse >= 2
+ORDER BY  nr_produse DESC; 
